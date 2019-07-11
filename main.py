@@ -1,7 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget
 
-
 class MyApp(QWidget):
 
     def __init__(self):
@@ -22,3 +21,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyApp()
     sys.exit(app.exec_())
+
+print("Test")
