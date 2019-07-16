@@ -99,7 +99,7 @@ class MyApp(QWidget):
 
         self.setWindowTitle('SHM Test Program')
         self.move(300, 300)
-        self.resize(500, 300)
+        self.resize(600, 300)
         self.show()
 
     def startBT_event(self):
@@ -180,14 +180,18 @@ class MyApp(QWidget):
         for i in range(len(check_device)):
             if Device[i] != "":
                 if check_device[i] == True:
-                    self.deviceOKcount[i] = self.deviceOKcount + 1
+                    self.deviceOKcount[i] = self.deviceOKcount[i] + 1
                 else:
                     self.deviceFailcount[i] = self.deviceFailcount[i] + 1
 
-        if False in check_device:
+        if True in check_device:
             self.deviceOKcount[4] = self.deviceOKcount[4] + 1
         else:
             self.deviceFailcount[4] = self.deviceFailcount[4] + 1
+
+        for i in range(len(device_type)):
+            self.deviceLABELlist[i].setText(device_type[i] + "\t" + str(self.deviceOKcount[i]) + "    /    " + str(self.deviceFailcount[i]))
+        self.totalLABEL.setText("Total\t" + str(self.deviceOKcount[4]) + "    /    " + str(self.deviceFailcount[4]))
 
 
     def intervalTimer(self):
