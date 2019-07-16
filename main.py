@@ -3,7 +3,7 @@ import time
 import datetime as date
 import threading
 import paho.mqtt.client as mqtt
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QAction, qApp, QLineEdit, QTextEdit, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QTextEdit, QGridLayout, QLabel
 from PyQt5.QtCore import QCoreApplication
 
 Device = []
@@ -21,6 +21,9 @@ class MyApp(QWidget):
     def initUI(self):
 
         self.imeiTEXTlist = []
+        self.deviceLABELlist = []
+        self.deviceOKcount = [0, 0, 0, 0, 0]
+        self.deviceFailcount = [0, 0, 0, 0, 0]
         self.mqttFlag = False
 
         print("make startBT")
@@ -55,6 +58,18 @@ class MyApp(QWidget):
         self.intervaltimeTEXT = QLineEdit(self)
         self.intervaltimeTEXT.setPlaceholderText('Time Interval')
 
+        print("make Device info label")
+        for i in range(len(device_type)):
+            self.deviceLABEL = QLabel(self)
+            self.deviceLABEL.setText(device_type[i] + "\t" + str(self.deviceOKcount[i]) + "    /    " + str(self.deviceFailcount[i]))
+            self.deviceLABELlist.append(self.deviceLABEL)
+
+        self.okfailLABEL = QLabel(self)
+        self.okfailLABEL.setText("\tOK / Fail")
+
+        self.totalLABEL = QLabel(self)
+        self.totalLABEL.setText("Total\t" + str(self.deviceOKcount[4]) + "    /    " + str(self.deviceFailcount[4]))
+
         print("make Device IMEI text")
         for i in range(len(device_type)):
             self.imeiTEXT = QLineEdit(self)
@@ -76,7 +91,11 @@ class MyApp(QWidget):
         grid.addWidget(self.intervaltimeTEXT, 1, 3)
         for i in range(len(self.imeiTEXTlist)):
             grid.addWidget(self.imeiTEXTlist[i], 2, i)
-        grid.addWidget(self.logbox, 3, 0, 1, 0)
+        grid.addWidget(self.logbox, 3, 0, 6, 3)
+        grid.addWidget(self.okfailLABEL, 3, 3, 1, 1)
+        for i in range(len(device_type)):
+            grid.addWidget(self.deviceLABELlist[i], 4+i, 3, 1, 1)
+        grid.addWidget(self.totalLABEL, 8, 3, 1, 1)
 
         self.setWindowTitle('SHM Test Program')
         self.move(300, 300)
@@ -144,7 +163,6 @@ class MyApp(QWidget):
         f.write(save_text)
         f.close()
 
-
     def text_edit_start(self):
         for i in range(len(Device)):
             log_text = device_type[i] + " : " + Device[i]
@@ -158,6 +176,19 @@ class MyApp(QWidget):
                 self.log_appand(log_txt)
         self.client.loop_stop()
         self.client.disconnect()
+
+        for i in range(len(check_device)):
+            if Device[i] != "":
+                if check_device[i] == True:
+                    self.deviceOKcount[i] = self.deviceOKcount + 1
+                else:
+                    self.deviceFailcount[i] = self.deviceFailcount[i] + 1
+
+        if False in check_device:
+            self.deviceOKcount[4] = self.deviceOKcount[4] + 1
+        else:
+            self.deviceFailcount[4] = self.deviceFailcount[4] + 1
+
 
     def intervalTimer(self):
         print("interval timer")
