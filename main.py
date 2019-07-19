@@ -25,6 +25,7 @@ class MyApp(QWidget):
         self.deviceOKcount = [0, 0, 0, 0, 0]
         self.deviceFailcount = [0, 0, 0, 0, 0]
         self.mqttFlag = False
+        self.connectFlag = False
 
         print("make startBT")
         startBT = QPushButton('Start', self)
@@ -184,10 +185,10 @@ class MyApp(QWidget):
                 else:
                     self.deviceFailcount[i] = self.deviceFailcount[i] + 1
 
-        if True in check_device:
-            self.deviceOKcount[4] = self.deviceOKcount[4] + 1
-        else:
+        if False in check_device:
             self.deviceFailcount[4] = self.deviceFailcount[4] + 1
+        else:
+            self.deviceOKcount[4] = self.deviceOKcount[4] + 1
 
         for i in range(len(device_type)):
             self.deviceLABELlist[i].setText(device_type[i] + "\t" + str(self.deviceOKcount[i]) + "    /    " + str(self.deviceFailcount[i]))
@@ -215,6 +216,11 @@ class MyApp(QWidget):
         for i in timer:
             i.cancel()
 
+    def mqttconnectTimer(self):
+        print("mqttconnectTimer")
+        if self.mqttFlag == False:
+            self.intervalTimer()
+
     def log_start(self):
         print("Log Start...")
         self.connMQTTbroker(self.brokerTEXT.text())
@@ -232,12 +238,20 @@ class MyApp(QWidget):
                 check_device[i] = True
             else:
                 check_device[i] = False
+
         time_list = threading.Timer(120, self.waitTimer)
+        # time_list = threading.Timer(30, self.waitTimer)    #Test Time
         time_list.start()
         timer.append(time_list)
 
     def connMQTTbroker(self, broker):
         print("Run connMQTTbroker")
+
+        self.connectFlag = False
+        time_list = threading.Timer(10, self.mqttconnectTimer)
+        time_list.start()
+        timer.append(time_list)
+
         if(self.mqttFlag == False):
             print("Connect Broker")
             self.log_appand("Connecting...")
@@ -248,6 +262,8 @@ class MyApp(QWidget):
             self.client.on_connect = self.on_connect  # on_connect callback 설정
             self.client.on_disconnect = self.on_disconnect #on_disconnect callback 설정
             self.client.connect(broker)  # MQTT 서버에 연결
+
+            self.connectFlag = True
 
             self.client.loop_start()    #MQTT Loop Start
 
