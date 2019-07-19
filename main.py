@@ -248,7 +248,7 @@ class MyApp(QWidget):
         print("Run connMQTTbroker")
 
         self.connectFlag = False
-        time_list = threading.Timer(10, self.mqttconnectTimer)
+        time_list = threading.Timer(60, self.mqttconnectTimer)
         time_list.start()
         timer.append(time_list)
 
