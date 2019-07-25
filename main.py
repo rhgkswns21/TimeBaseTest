@@ -26,6 +26,7 @@ class MyApp(QWidget):
         self.deviceFailcount = [0, 0, 0, 0, 0]
         self.mqttFlag = False
         self.connectFlag = False
+        self.autologCount = 0
 
         print("make startBT")
         startBT = QPushButton('Start', self)
@@ -193,6 +194,11 @@ class MyApp(QWidget):
         for i in range(len(device_type)):
             self.deviceLABELlist[i].setText(device_type[i] + "\t" + str(self.deviceOKcount[i]) + "    /    " + str(self.deviceFailcount[i]))
         self.totalLABEL.setText("Total\t" + str(self.deviceOKcount[4]) + "    /    " + str(self.deviceFailcount[4]))
+
+        self.autologCount = self.autologCount + 1
+        if(self.autologCount >= 10):
+            self.autologCount = 0
+            self.saveBT_event()
 
 
     def intervalTimer(self):
