@@ -147,8 +147,8 @@ class MyApp(QWidget):
         for i in range(len(self.imeiTEXTlist)):
             Device.append(self.imeiTEXTlist[i].text())
         self.log_start()
-        self.client.loop_stop()
-        self.client.disconnect()
+        self.client1.loop_stop()
+        self.client1.disconnect()
 
     def exitBT_event(self):
         print("exitBT click")
@@ -229,10 +229,14 @@ class MyApp(QWidget):
 
     def log_start(self):
         print("Log Start...")
-        self.connMQTTbroker(self.brokerTEXT.text())
+        self.client1 = mqtt.Client()  # MQTT Client 오브젝트 생성
+        self.client1.on_connect = self.on_connect_log
+        self.client1.on_disconnect = self.on_disconnect_log
+        self.client1.connect(self.brokerTEXT.text())  # MQTT 서버에 연결
+        self.client1.loop_start()
         for i in Device:
             if i != "":
-                self.client.publish("Entity/SHM/Node/"+i+"/OTA",'{"nId":"'+i+'","nT":"SHM","status":{"OP":"TestLog"},"timestamp":'+str(int(time.time()))+'}')
+                self.client1.publish("Entity/SHM/Node/"+i+"/OTA",'{"nId":"'+i+'","nT":"SHM","status":{"OP":"TestLog"},"timestamp":'+str(int(time.time()))+'}')
 
     def sample_start(self):
         print("Sample_Start....")
@@ -275,6 +279,15 @@ class MyApp(QWidget):
 
     def on_log(self, *args):
         print(args[3])
+
+    def on_connect_log(self, *args):
+        print(args[3])
+        if args[3] == 0:
+            self.log_appand("Broker Connection Complete")
+
+    def on_disconnect_log(self, *args):
+        print("Disconnect")
+        self.log_appand("Disconnect Broker\n")
 
     def on_connect(self, *args):
         print(args[3])
