@@ -5,6 +5,8 @@ import threading
 import paho.mqtt.client as mqtt
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QTextEdit, QGridLayout, QLabel
 from PyQt5.QtCore import QCoreApplication
+import os
+import filecmp
 
 Device = []
 device_type = ["M", "S1", "S2", "S3"]
@@ -329,6 +331,15 @@ class MyApp(QWidget):
         self.logbox.append(print_text)
 
 if __name__ == '__main__':
+
+    # make dir
+    if not (os.path.isdir("checkDATA")):
+        os.makedirs(os.path.join("checkDATA"))
+
+    if filecmp.cmp("checkDATA/test01.txt", "checkDATA/test02.txt", shallow=False):
+        print("01")
+    else:
+        print("02")
 
     app = QApplication(sys.argv)
     ex = MyApp()
