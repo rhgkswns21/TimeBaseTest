@@ -7,10 +7,12 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QText
 from PyQt5.QtCore import QCoreApplication
 import os
 import filecmp
+import shutil
 
 Device = []
 device_type = ["M", "S1", "S2", "S3"]
 check_device = [False, False, False, False]
+check_topic = []
 time_info = []
 timer = []
 
@@ -202,6 +204,9 @@ class MyApp(QWidget):
             self.autologCount = 0
             self.saveBT_event()
 
+        self.comparison()
+
+
 
     def intervalTimer(self):
         print("interval timer")
@@ -317,6 +322,7 @@ class MyApp(QWidget):
                 check_device[i] = True
                 send_text = "OK Device :" + "\t" + device_type[i] + " " + Device[i]
                 self.log_appand(send_text)
+                self.make_data_file(str(msg.payload), str(topic))
         print("check deivce ", check_device)
 
         if False in check_device:
@@ -330,16 +336,41 @@ class MyApp(QWidget):
         print_text = str(now_time.strftime('%Y-%m-%d %H:%M:%S')) + "\t" + text
         self.logbox.append(print_text)
 
+    def make_data_file(self, mqtt_data, topic):
+        split_topic = topic.split('/')
+        print(split_topic[3])
+        check_topic.append(split_topic[3])
+        f = open("checkDATA/now" + split_topic[3] + ".txt", 'w')
+        test_data2 = mqtt_data.split('"accelerometer":"')
+        print(test_data2)
+        test_data3 = test_data2[1].split('"}')
+        print(test_data3)
+        split_test = test_data3[0].split('n')
+        print(split_test)
+        delete_text = []
+        for i in range(0, len(split_test) - 1):
+            delete_text.append(split_test[i].rstrip('\\').rstrip('r').rstrip('\\'))
+            f.write(delete_text[i])
+            f.write("\n")
+        f.close()
+
+    def comparison(self):
+        for i in check_topic:
+            print("Comparison" + i)
+            if os.path.isfile("checkDATA/pre" + i + ".txt"):
+                if filecmp.cmp("checkDATA/pre" + i + ".txt", "checkDATA/now" + i + ".txt"):
+                    print(i + "의 내용이 동일")
+                    self.log_appand(i + " Same Data")
+                else:
+                    print(i + "의 내용이 다름")
+            shutil.copyfile("checkDATA/now" + i + ".txt", "checkDATA/pre" + i + ".txt")
+        check_topic.clear()
+
 if __name__ == '__main__':
 
     # make dir
     if not (os.path.isdir("checkDATA")):
         os.makedirs(os.path.join("checkDATA"))
-
-    if filecmp.cmp("checkDATA/test01.txt", "checkDATA/test02.txt", shallow=False):
-        print("01")
-    else:
-        print("02")
 
     app = QApplication(sys.argv)
     ex = MyApp()
